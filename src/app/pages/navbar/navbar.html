@@ -1,0 +1,30 @@
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <a routerLink="/dashboard">Task Manager</a>
+        </div>
+
+        <button class="navbar-toggle" (click)="toggleMenu()" aria-label="Abrir menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        <ul class="navbar-menu" [class.active]="menuOpen()">
+            @for (item of visibleItems; track item.route) {
+            <li>
+                <a [routerLink]="item.route" routerLinkActive="active-link" (click)="menuOpen.set(false)">
+                    {{ item.label }}
+                </a>
+            </li>
+            }
+        </ul>
+
+        <div class="navbar-user" [class.active]="menuOpen()">
+            @if (currentUser()) {
+            <span class="user-name">{{ currentUser().name }}</span>
+            <button class="btn-logout" (click)="logout()">Sair</button>
+            }
+        </div>
+    </div>
+</nav>

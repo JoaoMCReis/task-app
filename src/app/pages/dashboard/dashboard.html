@@ -1,0 +1,118 @@
+<div class="tasks-page">
+  <div class="tasks-header">
+    <h2>Gestão de Tarefas</h2>
+    @if (canCreate()) {
+    <app-button variant="primary" (click)="openCreate()" label="Nova Tarefa" />
+    }
+  </div>
+
+  @if (loading()) {
+  <div class="loading">Carregando tarefas...</div>
+  }
+
+  @if (errorMessage()) {
+  <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <!-- Modal / Formulário -->
+  @if (showForm()) {
+  <div class="modal-overlay" (click)="cancelForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editing() ? 'Editar Tarefa' : 'Nova Tarefa' }}</h3>
+      <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+        <div class="form-group">
+          <label for="title">Título</label>
+          <input id="title" type="text" formControlName="title" />
+          @if (taskForm.get('title')?.invalid && taskForm.get('title')?.touched) {
+          <span class="field-error">Título é obrigatório.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descrição</label>
+          <textarea id="description" formControlName="description" rows="4"></textarea>
+          @if (taskForm.get('description')?.invalid && taskForm.get('description')?.touched) {
+          <span class="field-error">Descrição é obrigatória.</span>
+          }
+        </div>
+
+        @if (!editing()) {
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" formControlName="status">
+            <option value="ToDo">A Fazer</option>
+            <option value="InProgress">Em Progresso</option>
+            <option value="Done">Feito</option>
+          </select>
+        </div>
+        }
+
+
+        <div class="form-group">
+          <label for="assignedToId">Atribuído a</label>
+          <select id="assignedToId" formControlName="assignedToId">
+            <option value="">Não atribuída</option>
+            @for (user of users(); track user.id) {
+            <option [value]="user.id">{{ user.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <app-button variant="secondary" (click)="cancelForm()" label="Cancelar" />
+          <button type="submit" class="btn-save" [disabled]="taskForm.invalid">
+            {{ editing() ? 'Guardar' : 'Criar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Tabela de tasks -->
+  @if (tasks().length > 0) {
+  <table>
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Descrição</th>
+        <th>Status</th>
+        <th>Criador</th>
+        <th>Atribuída a</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (task of tasks(); track task.id) {
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.description }}</td>
+        <td>
+          <span class="status-badge" [class]="'status-' + task.status">
+            {{ getStatusLabel(task.status) }}
+          </span>
+        </td>
+        <td>{{ getCreatorName(task.createdById) }}</td>
+        <td>{{ getUserName(task.assignedToId) }}</td>
+        <td class="actions">
+          @if (canEdit(task)) {
+          <!-- <button class="btn-edit" (click)="openEdit(task)">Editar</button> -->
+          <app-button variant="primary" (click)="openEdit(task)" label="Editar" />
+          }
+          @if (canDelete(task)) {
+          <app-button variant="danger" (click)="deleteTask(task)" label="Eliminar" />
+          }
+          @if (!canEdit(task) && !canDelete(task)) {
+          <span class="no-actions">—</span>
+          }
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+
+  @if (tasks().length === 0 && !loading()) {
+  <div class="no-tasks">Nenhuma tarefa encontrada.</div>
+  }
+</div>

@@ -1,0 +1,105 @@
+<div class="users-page">
+    <div class="users-header">
+        <h2>Gestao de Utilizadores</h2>
+        <app-button variant="primary" (click)="openCreate()" label="Novo utilizador" />
+    </div>
+
+    @if (loading()) {
+    <div class="loading">Carregando utilizadores...</div>
+    }
+
+    @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+    }
+
+    <!-- Modal / Formulario -->
+    @if (showForm()) {
+    <div class="modal-overlay" (click)="cancelForm()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h3>{{ editing() ? 'Editar Utilizador' : 'Novo Utilizador' }}</h3>
+            <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input id="name" type="text" formControlName="name" />
+                    @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
+                    <span class="field-error">Nome e obrigatorio.</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" formControlName="email" />
+                    @if (userForm.get('email')?.touched && userForm.get('email')?.errors) {
+                    @if (userForm.get('email')?.errors?.['required']) {
+                    <span class="field-error">Email e obrigatorio.</span>
+                    } @else if (userForm.get('email')?.errors?.['email']) {
+                    <span class="field-error">Email invalido.</span>
+                    }
+                    }
+                </div>
+
+                @if (!editing()) {
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" formControlName="passwordHash" />
+                    @if (userForm.get('passwordHash')?.invalid && userForm.get('passwordHash')?.touched) {
+                    <span class="field-error">Password e obrigatoria.</span>
+                    }
+                </div>
+                }
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" formControlName="role">
+                        <option value="member">Member</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <app-button variant="secondary" (click)="cancelForm()" label="Cancelar" />
+                    <button type="submit" class="btn-save" [disabled]="userForm.invalid">
+                        {{ editing() ? 'Guardar' : 'Criar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <!-- Tabela de users -->
+    @if (users().length > 0) {
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (user of users(); track user.id) {
+            <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <span class="role-badge" [class]="'role-' + user.role">
+                        {{ user.role }}
+                    </span>
+                </td>
+                <td class="actions">
+                    <app-button variant="primary" (click)="openEdit(user)" label="Editar" />
+                    <app-button variant="danger" (click)="deleteUser(user)" label="Eliminar" />
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    }
+
+    @if (users().length === 0 && !loading()) {
+    <div class="no-users">Nenhum utilizador encontrado.</div>
+    }
+</div>

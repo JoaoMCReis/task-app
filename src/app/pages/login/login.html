@@ -1,0 +1,43 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Login</h1>
+
+    @if (errorMessage()) {
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" placeholder="seu@email.com" [disabled]="isLoading()" />
+        @if (form.get('email')?.invalid && (form.get('email')?.touched || form.get('email')?.dirty)) {
+        <div class="validation">
+          @if (form.get('email')?.errors?.['required']) {<small>Email é obrigatório.</small>}
+          @if (form.get('email')?.errors?.['email']) {<small>Email inválido.</small>}
+        </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input id="password" type="password" formControlName="password" placeholder="Sua senha"
+          [disabled]="isLoading()" />
+        @if (form.get('password')?.invalid && (form.get('password')?.touched || form.get('password')?.dirty)) {
+        <div class="validation">
+          @if (form.get('password')?.errors?.['required']) {<small>Senha é obrigatória.</small>}
+        </div>
+        }
+      </div>
+
+      <button type="submit" [disabled]="isLoading() || form.invalid" class="submit-button">
+        @if (isLoading()) {
+        Entrando...
+        } @else {
+        Entrar
+        }
+      </button>
+    </form>
+  </div>
+</div>
