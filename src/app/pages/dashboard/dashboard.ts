@@ -7,11 +7,13 @@ import { AuthService } from '../../services/auth.service';
 import { Task } from '../../models/task.model';
 import { User } from '../../models/user.model';
 import { ButtonComponent } from '../../shared/components/button/button';
+import { TableColumn } from '../../shared/components/table/table';
+import { TableComponent } from '../../shared/components/table/table';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, ButtonComponent, FormsModule],
+    imports: [CommonModule, ReactiveFormsModule, ButtonComponent, FormsModule, TableComponent],
     templateUrl: './dashboard.html',
     styleUrls: ['./dashboard.css']
 })
@@ -29,6 +31,11 @@ export class DashboardComponent implements OnInit {
     showForm = signal(false);
     editing = signal(false);
     editingTaskId = signal<string | null>(null);
+
+    page = signal(1);
+    pageSize = signal(5);
+
+    totalCount = signal(0);
 
     taskForm: FormGroup = this.fb.group({
         title: ['', Validators.required],
@@ -49,10 +56,10 @@ export class DashboardComponent implements OnInit {
         this.loading.set(true);
         this.errorMessage.set('');
 
-        this.tasksService.getAll().subscribe({
-            next: (tasks: Task[]) => {
-                console.log('Tasks recebidas:', tasks);
-                this.tasks.set(tasks);
+        this.tasksService.getAll(undefined, this.page(), this.pageSize()).subscribe({
+            next: (res) => {
+                this.tasks.set(res.items);
+                this.totalCount.set(res.totalCount);
                 this.loading.set(false);
             },
             error: (err) => {
@@ -83,6 +90,77 @@ export class DashboardComponent implements OnInit {
                 console.error('Erro ao carregar utilizadores:', err);
             }
         });
+    }
+
+    nextPage() {
+        this.page.update(p => p + 1);
+        this.loadTasks();
+    }
+
+    prevPage() {
+        if (this.page() > 1) {
+            this.page.update(p => p - 1);
+            this.loadTasks();
+        }
+    }
+
+    // taskColumns = computed<TableColumn<Task>[]>(() => [
+    //     {
+    //         label: 'Título',
+    //         field: 'title',
+    //         sortable: true
+    //     },
+    //     {
+    //         label: 'Descrição',
+    //         field: 'description',
+    //         sortable: true
+    //     },
+    //     {
+    //         label: 'Status',
+    //         field: 'status',
+    //         sortable: true,
+    //         template: (task: Task) => {
+    //             const statusLabel = this.getStatusLabel(task.status);
+    //             return `<span class="status-badge status-${task.status}">${statusLabel}</span>`;
+    //         }
+    //     },
+    //     {
+    //         label: 'Criador',
+    //         field: 'createdById',
+    //         sortable: true,
+    //         template: (task: Task) => this.getCreatorName(task.createdById)
+    //     },
+    //     {
+    //         label: 'Atribuída a',
+    //         field: 'assignedToId',
+    //         sortable: true,
+    //         template: (task: Task) => this.getUserName(task.assignedToId)
+    //     },
+    //     {
+    //         label: 'Ações',
+    //         field: 'actions' as any,
+    //         template: (task: Task) => {
+    //             const buttons: string[] = [];
+
+    //             if (this.canEdit(task)) {
+    //                 buttons.push(`<button class="btn-edit" data-action="edit" data-id="${task.id}">Editar</button>`);
+    //             }
+
+    //             if (this.canDelete(task)) {
+    //                 buttons.push(`<button class="btn-delete" data-action="delete" data-id="${task.id}">Eliminar</button>`);
+    //             }
+
+    //             return buttons.length > 0 ? buttons.join(' ') : '<span class="no-actions">—</span>';
+    //         }
+    //     }
+    // ]);
+
+    handleEdit(task: Task) {
+        this.openEdit(task);
+    }
+
+    handleDelete(task: Task) {
+        this.deleteTask(task);
     }
 
     openCreate() {

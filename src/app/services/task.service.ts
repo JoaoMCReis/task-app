@@ -33,12 +33,12 @@ export class TasksService {
         });
     }
 
-    getAll(status?: string, page: number = 1, pageSize: number = 10): Observable<Task[]> {
+    getAll(status?: string, page: number = 1, pageSize: number = 10): Observable<{ items: Task[], totalCount: number }> {
         let params = new HttpParams().set('page', page).set('pageSize', pageSize);
 
         if (status) params = params.set('status', status);
 
-        return this.http.get<Task[]>(this.baseUrl, {
+        return this.http.get<{ items: Task[], totalCount: number }>(this.baseUrl, {
             headers: this.getAuthHeaders(),
             params,
         });

@@ -1,0 +1,40 @@
+<!-- table.component.html -->
+<div class="table-container">
+    <input type="text" placeholder="Filtrar..." [(ngModel)]="filterTerm" class="filter-input" />
+
+    <table>
+        <thead>
+            <tr>
+                <th *ngFor="let col of columns" (click)="col.sortable ? changeSort(col.field) : null"
+                    [class.sortable]="col.sortable">
+                    {{ col.label }}
+                    <span *ngIf="sortField() === col.field">
+                        {{ sortDirection() === 'asc' ? '▲' : '▼' }}
+                    </span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of paginatedData()">
+                <td *ngFor="let col of columns">
+                    <span [innerHTML]="getCellValue(item, col)"></span>
+                </td>
+            </tr>
+            <tr *ngIf="paginatedData().length === 0">
+                <td [attr.colspan]="columns.length" class="no-data">
+                    Sem dados disponíveis
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="totalPages() > 1">
+        <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
+            «
+        </button>
+        <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
+        <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
+            »
+        </button>
+    </div>
+</div>
